@@ -1,5 +1,6 @@
 import json
 import sys
+import argparse
 
 
 class Board:
@@ -231,12 +232,19 @@ class Solver:
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-p", "--progress", help="Display progress in terminal", action="store_true", default=False)
+    parser.add_argument("-d", "--debug", help="Display debug information", action="store_true", default=False)
+    parser.add_argument("-f", "--file", help="File to load board from", type=str, default="board.json")
+
+    args = parser.parse_args()
+
     grid = []
-    with open("board.json", "r") as f:
+    with open(args.file, "r") as f:
         grid = json.load(f)
     board = Board(grid)
     solver = Solver(board)
     while not solver.check_if_solved():
-        solver.solve(True, True)
+        solver.solve(args.progress, args.debug)
     board.display_board()
     

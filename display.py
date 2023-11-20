@@ -2,6 +2,7 @@ import pygame
 from solver import Board, Solver
 import json
 import sys
+import argparse
 
 class Display:
     def __init__(self, tile_size, gridFileName: str = None):
@@ -58,7 +59,7 @@ class Display:
                 pygame.draw.line(self.__screen, (0, 0, 0), (0, i * self.__tile_size), (self.__width, i * self.__tile_size), 1)
                 pygame.draw.line(self.__screen, (0, 0, 0), (i * self.__tile_size, 0), (i * self.__tile_size, self.__height), 1)
     
-    def check_events(self):
+    def check_events(self, progress=False, debug=False):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -69,7 +70,7 @@ class Display:
                     progress = True
                     while not added and progress:
                         try:
-                            progress, added, removed = self.__solver.solve(True, True)
+                            progress, added, removed = self.__solver.solve(progress, debug)
                             self.invalid = False
                         except Exception:
                             self.invalid = True
@@ -117,13 +118,13 @@ class Display:
         with open(fileName, "w") as f:
             json.dump(self.__board.get_board(), f)
 
-    def run(self):
+    def run(self, progress=False, debug=False):
         running = True
         while running:
 
             self.__screen.fill((255, 255, 255))
 
-            self.check_events()
+            self.check_events(progress, debug)
             
             self.draw_board()
 
@@ -131,8 +132,13 @@ class Display:
 
 
 if __name__ == "__main__":
-    args = sys.argv
+    parser = argparse.ArgumentParser(description="Sudoku Solver")
+    parser.add_argument("--progress", help="Display progress in terminal", action="store_true", default=False)
+    parser.add_argument("--debug", help="Display debug information", action="store_true", default=False)
+    parser.add_argument("--file", help="Path to the grid file", type=str, default=None)
+    args = parser.parse_args()
+
     display = Display(50)
-    if len(args) > 1:
-        display = Display(50, args[1])
-    display.run()
+    if args.file != None:
+        display = Display(50, args.file)
+    display.run(args.progress, args.debug)
