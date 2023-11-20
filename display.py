@@ -22,16 +22,27 @@ class Display:
             self.__board = Board()
         self.__solver = Solver(self.__board)
         pygame.display.set_caption("Sudoku Solver")
+
+        # Create invalid board text
+        self.invalid = False
+        font = pygame.font.SysFont("Arial", 30)
+        text = font.render("Invalid board", True, (255, 0, 0))
+        self.__invalid_text = pygame.transform.rotate(text, 45)
+        self.__invalid_text_rect = self.__invalid_text.get_rect(center=(self.__width // 2, self.__height // 2))
     
     def draw_board(self):
         # Draw square where selected coordinates are
-        pygame.draw.rect(self.__screen, (0, 255, 0), (self.__selected_coors[1] * self.__tile_size, self.__selected_coors[0] * self.__tile_size, self.__tile_size, self.__tile_size), 3)
+        pygame.draw.rect(self.__screen, (0, 255, 0), (self.__selected_coors[0] * self.__tile_size, self.__selected_coors[1] * self.__tile_size, self.__tile_size, self.__tile_size), 3)
 
         for row in range(len(self.__board.get_board())):
             for col in range(len(self.__board.get_board()[row])):
                 if self.__board.get_number(row, col) != 0:
                     self.__draw_number(row, col, self.__board.get_number(row, col))
+
         self.__draw_lines()
+
+        if self.invalid:
+            self.__screen.blit(self.__invalid_text, self.__invalid_text_rect)
     
     def __draw_number(self, row, col, number):
         font = pygame.font.SysFont("Arial", 30)
@@ -57,9 +68,27 @@ class Display:
                     added = False
                     progress = True
                     while not added and progress:
-                        progress, added, removed = self.__solver.solve(True, True)
+                        try:
+                            progress, added, removed = self.__solver.solve(True, True)
+                            self.invalid = False
+                        except Exception:
+                            self.invalid = True
+                            break
+                elif event.key == pygame.K_s:
+                    self.save_board("board.json")
                 elif event.unicode in "123456789" and event.unicode != "":
-                    self.__board.grid[self.__selected_coors[0]][self.__selected_coors[1]] = int(event.unicode)
+                    self.__board.grid[self.__selected_coors[1]][self.__selected_coors[0]] = int(event.unicode)
+                elif event.key == pygame.K_BACKSPACE:
+                    self.__board.grid[self.__selected_coors[1]][self.__selected_coors[0]] = 0
+                elif event.key == pygame.K_UP:
+                    self.move_coors(0, -1)
+                elif event.key == pygame.K_DOWN:
+                    self.move_coors(0, 1)
+                elif event.key == pygame.K_LEFT:
+                    self.move_coors(-1, 0)
+                elif event.key == pygame.K_RIGHT:
+                    self.move_coors(1, 0)
+                
             self.check_mouse_click(event)
     
     def check_mouse_click(self, event):
@@ -69,7 +98,24 @@ class Display:
             if mouse_pos[0] < self.__width and mouse_pos[1] < self.__height:
                 row = mouse_pos[1] // self.__tile_size
                 col = mouse_pos[0] // self.__tile_size
-                self.__selected_coors = [row, col]
+                self.__selected_coors = [col, row]
+    
+    def move_coors(self, x_move, y_move):
+        x = self.__selected_coors[0] + x_move
+        if x < 0:
+            x = 8
+        elif x > 8:
+            x = 0
+        y = self.__selected_coors[1] + y_move
+        if y < 0:
+            y = 8
+        elif y > 8:
+            y = 0
+        self.__selected_coors = [x, y]
+    
+    def save_board(self, fileName: str):
+        with open(fileName, "w") as f:
+            json.dump(self.__board.get_board(), f)
 
     def run(self):
         running = True
@@ -85,5 +131,8 @@ class Display:
 
 
 if __name__ == "__main__":
+    args = sys.argv
     display = Display(50)
+    if len(args) > 1:
+        display = Display(50, args[1])
     display.run()
