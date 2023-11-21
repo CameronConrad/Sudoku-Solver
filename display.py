@@ -86,9 +86,12 @@ class Display:
                 elif event.key == pygame.K_l:
                     if self.gridFileName != None:
                         self.load_board(self.gridFileName)
+                elif event.key == pygame.K_c:
+                    self.__board = Board()
+                    self.__solver = Solver(self.__board)
                 elif event.unicode in "123456789" and event.unicode != "":
                     self.__board.grid[self.__selected_coors[1]][self.__selected_coors[0]] = int(event.unicode)
-                elif event.key == pygame.K_BACKSPACE:
+                elif event.key == pygame.K_BACKSPACE or event.key == pygame.K_DELETE or event.key == pygame.K_SPACE:
                     self.__board.grid[self.__selected_coors[1]][self.__selected_coors[0]] = 0
                     self.__solver.possible_numbers[self.__selected_coors[1]][self.__selected_coors[0]] = [i for i in range(1, 10)]
                 elif event.key == pygame.K_UP:
