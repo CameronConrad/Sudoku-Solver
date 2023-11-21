@@ -5,7 +5,7 @@ import sys
 import argparse
 
 class Display:
-    def __init__(self, tile_size, gridFileName: str = None):
+    def __init__(self, tile_size, gridFileName: str = "board.json"):
         pygame.init()
 
         self.__tile_size = tile_size
@@ -15,8 +15,9 @@ class Display:
         self.__screen.fill((255, 255, 255))
         self.__board = None
         self.__selected_coors = [0, 0]
-        if gridFileName != None:
-            with open(gridFileName, "r") as f:
+        self.gridFileName = gridFileName
+        if self.gridFileName != None:
+            with open(self.gridFileName, "r") as f:
                 grid = json.load(f)
                 self.__board = Board(grid)
         else:
@@ -29,7 +30,8 @@ class Display:
         font = pygame.font.SysFont("Arial", 30)
         text = font.render("Invalid board", True, (255, 0, 0))
         self.__invalid_text = pygame.transform.rotate(text, 45)
-        self.__invalid_text_rect = self.__invalid_text.get_rect(center=(self.__width // 2, self.__height // 2))
+        self.__invalid_text_rect = self.__invalid_text.get_rect()
+        self.__invalid_text_rect.center = (self.__width // 2, self.__height // 2)
     
     def draw_board(self):
         # Draw square where selected coordinates are
@@ -48,7 +50,10 @@ class Display:
     def __draw_number(self, row, col, number):
         font = pygame.font.SysFont("Arial", 30)
         text = font.render(str(number), True, (0, 0, 0))
-        self.__screen.blit(text, (col * self.__tile_size + 10, row * self.__tile_size + 10))
+        text_rect = text.get_rect()
+        text_rect.center = (col * self.__tile_size + self.__tile_size // 2, row * self.__tile_size + self.__tile_size // 2)
+        self.__screen.blit(text, text_rect)
+
 
     def __draw_lines(self):
         for i in range(len(self.__board.get_board())):
@@ -76,11 +81,16 @@ class Display:
                             self.invalid = True
                             break
                 elif event.key == pygame.K_s:
-                    self.save_board("board.json")
+                    if self.gridFileName != None:
+                        self.save_board(self.gridFileName)
+                elif event.key == pygame.K_l:
+                    if self.gridFileName != None:
+                        self.load_board(self.gridFileName)
                 elif event.unicode in "123456789" and event.unicode != "":
                     self.__board.grid[self.__selected_coors[1]][self.__selected_coors[0]] = int(event.unicode)
                 elif event.key == pygame.K_BACKSPACE:
                     self.__board.grid[self.__selected_coors[1]][self.__selected_coors[0]] = 0
+                    self.__solver.possible_numbers[self.__selected_coors[1]][self.__selected_coors[0]] = [i for i in range(1, 10)]
                 elif event.key == pygame.K_UP:
                     self.move_coors(0, -1)
                 elif event.key == pygame.K_DOWN:
@@ -117,6 +127,12 @@ class Display:
     def save_board(self, fileName: str):
         with open(fileName, "w") as f:
             json.dump(self.__board.get_board(), f)
+    
+    def load_board(self, fileName: str):
+        with open(fileName, "r") as f:
+            grid = json.load(f)
+            self.__board = Board(grid)
+            self.__solver = Solver(self.__board)
 
     def run(self, progress=False, debug=False):
         running = True
@@ -141,4 +157,6 @@ if __name__ == "__main__":
     display = Display(50)
     if args.file != None:
         display = Display(50, args.file)
+    else:
+        display = Display(50, "board.json")
     display.run(args.progress, args.debug)

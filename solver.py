@@ -89,13 +89,13 @@ class Board:
 class Solver:
     def __init__(self, board: Board):
         self.board = board
-        self.__possible_numbers = [[[i + 1 for i in range(self.board.get_size())] 
+        self.possible_numbers = [[[i + 1 for i in range(self.board.get_size())] 
                                     for i in range(self.board.get_size())] 
                                     for j in range(self.board.get_size())]
-        for row in range(len(self.__possible_numbers)):
-            for col in range(len(self.__possible_numbers[row])):
+        for row in range(len(self.possible_numbers)):
+            for col in range(len(self.possible_numbers[row])):
                 if self.board.get_number(row, col) != 0:
-                    self.__possible_numbers[row][col] = [self.board.get_number(row, col)]
+                    self.possible_numbers[row][col] = [self.board.get_number(row, col)]
         self.solved = False
     
     def check_if_solved(self) -> bool:
@@ -142,41 +142,41 @@ class Solver:
                 # If there is no number in the cell, get the possible numbers
                 if self.board.get_number(y, x) == 0:
                     # Create a copy of the possible numbers for backtracking
-                    possible_numbers_copy = self.__possible_numbers[y][x][:]
+                    possible_numbers_copy = self.possible_numbers[y][x][:]
 
                     # Loop through possible numbers
                     for number in possible_numbers_copy:
                         # Check if the possibility is invalid
                         if not self.board.check_if_number_valid(y, x, number):
-                            self.__possible_numbers[y][x].remove(number)
+                            self.possible_numbers[y][x].remove(number)
                             if debugDisplay:
                                 print(f"Removed {number} from row {y} column {x}")
                             progress = True
 
                     # If there is only one possible number left, add it to the board
-                    if len(self.__possible_numbers[y][x]) == 1 and self.board.get_number(y, x) == 0:
-                        self.board.grid[y][x] = self.__possible_numbers[y][x][0]
+                    if len(self.possible_numbers[y][x]) == 1 and self.board.get_number(y, x) == 0:
+                        self.board.grid[y][x] = self.possible_numbers[y][x][0]
                         if debugDisplay:
-                            print(f"Added {self.__possible_numbers[y][x][0]} to row {y} column {x}")
+                            print(f"Added {self.possible_numbers[y][x][0]} to row {y} column {x}")
                         added = True
                         progress = True
 
         # Find numbers that are only possible in one square
-        for y in range(len(self.__possible_numbers)):
-            for x in range(len(self.__possible_numbers[y])):
-                for num in self.__possible_numbers[y][x]:
+        for y in range(len(self.possible_numbers)):
+            for x in range(len(self.possible_numbers[y])):
+                for num in self.possible_numbers[y][x]:
                     # Look through the possible numbers in the row
                     essential = True
-                    for item_x in range(len(self.__possible_numbers[y])):
-                        if num in self.__possible_numbers[y][item_x] and item_x != x:
+                    for item_x in range(len(self.possible_numbers[y])):
+                        if num in self.possible_numbers[y][item_x] and item_x != x:
                             essential = False
                             break
 
                     # Look through the possible numbers in the column
                     if not essential:
                         essential = True
-                        for item_y in range(len(self.__possible_numbers)):
-                            if num in self.__possible_numbers[item_y][x] and item_y != y:
+                        for item_y in range(len(self.possible_numbers)):
+                            if num in self.possible_numbers[item_y][x] and item_y != y:
                                 essential = False
                                 break
 
@@ -187,34 +187,34 @@ class Solver:
                         startCol = (x // 3) * 3
                         for i in range(startRow, startRow + 3):
                             for j in range(startCol, startCol + 3):
-                                if num in self.__possible_numbers[i][j] and (i != y or j != x):
+                                if num in self.possible_numbers[i][j] and (i != y or j != x):
                                     essential = False
                                     break
 
                     # If the number is essential, add it to the board
                     if essential and self.board.get_number(y, x) == 0:
                         self.board.grid[y][x] = num
-                        self.__possible_numbers[y][x] = [num]
+                        self.possible_numbers[y][x] = [num]
                         if debugDisplay:
                             print(f"Added {num} to row {y} column {x}")
                         added = True
                         progress = True
 
         # Update main board    
-        for y in range(len(self.__possible_numbers)):
-            for x in range(len(self.__possible_numbers[y])):
+        for y in range(len(self.possible_numbers)):
+            for x in range(len(self.possible_numbers[y])):
                 # If there is only one possible number, add it to the board
-                if len(self.__possible_numbers[y][x]) == 1 and self.board.get_number(y, x) == 0:
-                    self.board.grid[y][x] = self.__possible_numbers[y][x][0]
+                if len(self.possible_numbers[y][x]) == 1 and self.board.get_number(y, x) == 0:
+                    self.board.grid[y][x] = self.possible_numbers[y][x][0]
                     if debugDisplay:
-                        print(f"Added {self.__possible_numbers[y][x][0]} to row {y} column {x}")
+                        print(f"Added {self.possible_numbers[y][x][0]} to row {y} column {x}")
 
         # Display board and possible numbers in the terminal
         if terminalDisplay:
             self.board.display_board()
             print()
         if debugDisplay:
-            for row in self.__possible_numbers:
+            for row in self.possible_numbers:
                 print(row)
 
         # Check if board is valid
