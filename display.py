@@ -151,10 +151,10 @@ class Display:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Sudoku Solver")
-    parser.add_argument("--progress", help="Display progress in terminal", action="store_true", default=False)
-    parser.add_argument("--debug", help="Display debug information", action="store_true", default=False)
-    parser.add_argument("--file", help="Path to the grid file", type=str, default=None)
+    parser = argparse.ArgumentParser(description="Sudoku Solver GUI")
+    parser.add_argument("-p", "--progress", help="Display progress in terminal", action="store_true", default=False)
+    parser.add_argument("-d", "--debug", help="Display debug information", action="store_true", default=False)
+    parser.add_argument("-f","--file", help="Path to the grid file", type=str, default=None)
     args = parser.parse_args()
 
     display = Display(50)
