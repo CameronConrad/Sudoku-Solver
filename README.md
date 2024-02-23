@@ -10,7 +10,7 @@ options:
   -h, --help            show this help message and exit
   -p, --progress        Display progress in terminal
   -d, --debug           Display debug information
-  -f FILE, --file FILE  File to load board from
+  -f FILE, --file FILE  File to load board from (file must be .json and contain a two-dimensional list)
 ```
 
 ```
@@ -21,5 +21,5 @@ options:
   -h, --help            show this help message and exit
   -p, --progress        Display progress in terminal
   -d, --debug           Display debug information
-  -f FILE, --file FILE  Path to the grid file
+  -f FILE, --file FILE  Path to the grid file (file must be .json and contain a two-dimensional list)
 ```
